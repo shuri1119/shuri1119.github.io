@@ -85,8 +85,7 @@ asr.onresult = function(event){
 	    
 	    if(new RegExp(wake_word).test(transcript_previous)){
 		    asr.abort(); // 音声認識を停止
-		    let answer = response[transcript];
-		    let webpage;
+		    let ret = response[transcript];
 	        
 	        if(typeof answer == 'undefined'){
 		        answer = "ごめんなさい。わかりません。";
