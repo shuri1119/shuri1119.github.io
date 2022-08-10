@@ -1,0 +1,180 @@
+<html lang="ja">
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="Content-Script-Type" content="text/javascript">
+<title>Spoken Dialog by Javascript</title>
+<link rel="stylesheet" href="MDsemi.css">
+</head>
+<body>
+
+<h1 class="style">あなたの知りたい天気情報をお伝えします</h1>
+<h3 class="style2">天気について聞きたいことを話しかけてみてね</h3>
+<h4 class="style2">天気に関する単語で話してみて<br>例：和歌山県の天気、雨、台風などなど</h3>
+
+<p>
+<button id="startButton" class="start"
+        type="button">
+    話す
+</button>
+<button id="stopButton" class="stop"
+        type="button">
+    やめる
+</button>
+</p>
+
+<p>
+<div id="resultOutput"></div>
+</p>
+
+<script>
+// 応答の定義（ハッシュ）    
+var response = {
+    "和歌山県の天気": ["和歌山県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/30/"],
+    "大阪府の天気": ["大阪府の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/27/"],
+    "京都府の天気": ["京都府の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/26/"],
+    "奈良県の天気": ["奈良県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/29/"],
+    "兵庫県の天気": ["兵庫県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/28/"],
+    "三重県の天気": ["三重県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/24/?day=1"],
+    "富山県の天気":["富山県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/16/?day=1"],
+    "静岡県の天気": ["静岡県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/22/?day=1"],
+    "石川県の天気": ["石川県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/17/?day=1"],
+    "岐阜県の天気": ["岐阜県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/21/?day=1"],
+    "愛知県の天気": ["愛知県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/23/?day=1"],
+    "福井県の天気": ["福井県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/18/?day=1"],
+    "滋賀県の天気":["滋賀県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/25/?day=1"],
+    "青森県の天気":["青森県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/2/?day=1"],
+    "秋田県の天気":["秋田県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/5/?day=1"],
+    "岩手県の天気":["岩手県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/3/?day=1"],
+    "宮城県の天気":["宮城県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/4/?day=1"],
+    "山形県の天気":["山形県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/6/?day=1"],
+    "福島県の天気":["福島県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/7/?day=1"],
+    "北海道の天気":["北海道の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/1.html?day=1"],
+    "新潟県の天気":["新潟県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/15/?day=1"],
+    "茨城県の天気":["茨城県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/8/?day=1"],
+    "栃木県の天気":["栃木県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/9/?day=1"],
+    "群馬県の天気":["群馬県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/10/?day=1"],
+    "千葉県の天気":["千葉県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/10/?day=1"],
+    "東京都の天気":["東京都の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/13/?day=1"],
+    "神奈川県の天気":["神奈川県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/14/?day=1"],
+    "埼玉県の天気":["埼玉県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/11/?day=1"],
+    "長野県の天気":["長野県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/20/?day=1"],
+    "山梨県の天気":["山梨県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/19/?day=1"],
+    "鳥取県の天気":["鳥取県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/31/?day=1"],
+    "島根県の天気":["島根県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/32/?day=1"],
+    "山口県の天気":["山口県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/35/?day=1"],
+    "岡山県の天気":["岡山県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/33/?day=1"],
+    "広島県の天気":["広島県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/34/?day=1"],
+    "徳島県の天気":["徳島県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/36/?day=1"],
+    "香川県の天気":["香川県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/37/?day=1"],
+    "高知県の天気":["高知県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/39/?day=1"],
+    "愛媛県の天気":["愛媛県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/38/?day=1"],
+    "福岡県の天気":["福岡県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/40/?day=1"],
+    "大分県の天気":["大分県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/44/?day=1"],
+    "熊本県の天気":["熊本県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/43/?day=1"],
+    "佐賀県の天気":["佐賀県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/41/?day=1"],
+    "長崎県の天気":["長崎県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/42/?day=1"],
+    "宮崎県の天気":["宮崎県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/45/?day=1"],
+    "鹿児島県の天気":["鹿児島県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/46/?day=1"],
+    "沖縄県の天気":["沖縄県の天気予報を表示します","https://weather.yahoo.co.jp/weather/jp/47/?day=1"],
+    "警報":["警報・注意報が出ている地域を表示します","https://typhoon.yahoo.co.jp/weather/jp/warn/"],
+    "注意報":["警報・注意報が出ている地域を表示します","https://typhoon.yahoo.co.jp/weather/jp/warn/"],
+    "雨":["アメダスを表示します","https://weather.yahoo.co.jp/weather/amedas/"],
+    "アメダス":["アメダスを表示します","https://weather.yahoo.co.jp/weather/amedas/"],
+    "晴れ":["各地の天気を表示します","https://tenki.jp/week/"],
+    "台風":["台風情報を表示します","https://typhoon.yahoo.co.jp/weather/jp/typhoon/"],
+    "天気予報":["weathernewsを表示します","https://weathernews.jp/onebox/tenki/"],
+    "雨雲レーダー":["雨雲レーダーを表示します","https://tenki.jp/radar/"],
+    "地震":["地震情報を表示します","https://earthquake.tenki.jp/bousai/earthquake/"],
+    "熱中症":["熱中症情報を表示します","https://tenki.jp/heatstroke/"],
+    "天気図":["実況天気図を表示します","https://tenki.jp/guide/chart/"],
+    "天気":["全国の天気を表示します","https://www.jma.go.jp/bosai/forecast/"],
+    "全国の天気":["全国の天気を表示します","https://www.jma.go.jp/bosai/forecast/"],
+    "避難":["避難情報を表示します","https://crisis.yahoo.co.jp/evacuation/"],
+    "火山":["火山情報を表示します","https://www.jma.go.jp/bosai/map.html#5/34.488/137.021/&contents=volcano"],
+    "波浪":["波浪情報を表示します","https://www.data.jma.go.jp/waveinf/tile/jp/index.html#zoom:4/lat:34.000000/lon:135.000000/mapheight:600/colordepth:normal/element:wave"],
+    "雪":["避難情報を表示します","https://www.jma.go.jp/bosai/snow/#lat:34.016242/lon:134.978027/zoom:5/colordepth:normal/elements:snowd"],
+    "土砂崩れ":["土砂災害情報を表示します","https://www.jma.go.jp/bosai/risk/#elements:land/lat:34.016242/lon:134.978027/zoom:5/colordepth:normal"],
+    "浸水":["浸水情報を表示します","https://www.jma.go.jp/bosai/risk/#elements:inund/lat:34.016242/lon:134.978027/zoom:5/colordepth:normal"],
+    "洪水":["洪水情報を表示します","https://www.jma.go.jp/bosai/risk/#elements:flood/lat:34.016242/lon:134.978027/zoom:5/colordepth:normal"],
+    "体感温度":["体感温度情報を表示します","https://tenki.jp/indexes/self_temp/"],
+};
+
+const startButton = document.querySelector('#startButton'); // 開始ボタン
+const stopButton = document.querySelector('#stopButton'); // 停止ボタン
+const resultOutput = document.querySelector('#resultOutput'); // 結果出力エリア
+
+if (!'SpeechSynthesisUtterance' in window) {
+    alert("あなたのブラウザはSpeech Synthesis APIに未対応です。");
+}
+const tts = new SpeechSynthesisUtterance(); // TTSインスタンスを生成
+//tts.text = textForm.value; // テキストを設定
+tts.lang = "ja-JP"; // 言語(日本語)、英語の場合はen-US
+tts.rate = 1.0; // 速度
+tts.pitch = 1.0; // 声の高さ
+tts.volume = 1.0; // 音量
+
+SpeechRecognition = webkitSpeechRecognition || SpeechRecognition;
+if (!'SpeechRecognition' in window) {
+    alert("あなたのブラウザはSpeech Recognition APIに未対応です。");
+}
+
+const asr = new SpeechRecognition(); // ASRインスタンスを生成
+asr.lang = "ja-JP"; // 言語（日本語）
+asr.interimResults = true; // 途中結果出力をオン
+asr.continuous = true; // 継続入力をオン
+
+let output = ''; // 出力
+
+// 認識結果が出力されたときのイベントハンドラ
+asr.onresult = function(event){
+    let transcript = event.results[event.resultIndex][0].transcript; // 結果文字列
+
+    let output_not_final = '';
+    if (event.results[event.resultIndex].isFinal) { // 結果が確定（Final）のとき
+	    asr.abort(); // 音声認識を停止
+	    let ret = response[transcript];
+
+        let answer;
+        let webpage;
+        
+        if(typeof ret == 'undefined'){
+	        answer = "ごめんね。聞き取れなかった。もう一度話してみてね。";
+    	}else{
+            answer = ret[0];
+            webpage = ret[1];
+        }
+
+        output += transcript + ' => ' + answer + '<br>';
+
+	    tts.text = answer;
+	    // 再生が終了（end）ときのイベントハンドラ（終了したときに実行される）
+	    tts.onend = function(event){
+            if(typeof webpage != 'undefined'){
+                location.href = webpage; // ページを移動
+            }   
+            asr.start(); // 音声認識を再開 
+	    }
+
+	    speechSynthesis.speak(tts); // 再生
+    } else { // 結果がまだ未確定のとき
+        output_not_final = '<span style="color:#ddd;">' + transcript + '</span>';
+    }
+    resultOutput.innerHTML = output + output_not_final;
+}
+
+// 開始ボタンのイベントハンドラ
+startButton.addEventListener('click', function() {
+    asr.start();
+})
+
+// 停止ボタンのイベントハンドラ
+stopButton.addEventListener('click', function() {
+    asr.abort();
+    asr.stop();
+})
+</script>
+
+</body>
+</html>
