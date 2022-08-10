@@ -5,6 +5,7 @@
 <meta http-equiv="Content-Style-Type" content="text/css">
 <meta http-equiv="Content-Script-Type" content="text/javascript">
 <title>Spoken Dialog by Javascript</title>
+<link rel="stylesheet" href="MDsemi.css">
 </head>
 <body>
 
@@ -12,7 +13,10 @@
 <h3>あなたの知りたい天気情報をお伝えします</h3>
 
 <p>
-<button id="startButton">start</button>
+<button class="favorite styled"
+        type="button">
+    start
+</button>
 <button id="stopButton">stop</button>
 </p>
 
@@ -23,7 +27,7 @@
 <script>
 // 応答の定義（ハッシュ）    
 var response = {
-    "和歌山の天気": ["和歌山県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/30/"],
+    "和歌山,天気": ["和歌山県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/30/"],
     "大阪の天気": ["大阪府の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/27/"],
     "京都の天気": ["京都府の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/26/"],
     "奈良の天気": ["奈良県の天気予報を表示します", "https://weather.yahoo.co.jp/weather/jp/29/"],
@@ -80,12 +84,28 @@ asr.onresult = function(event){
         let answer;
         let webpage;
         
-        if(typeof ret == 'undefined'){
+        let keys = Object.keys(response);
+        keys.forEach(function(key) {
+            let flag = true;
+            console.log(transcript);
+            key.split(',').forEach(function(word) {              
+                let pattern = new RegExp(word);
+                let flag_test = pattern.test(transcript); // マッチしたらtrue, しなかったらfalse
+                flag = flag && flag_test; // 両方trueならtrue
+                console.log(pattern + '+' + ':' + flag_test);
+                //flag = flag && new RegExp(word).test(transcript);
+            });
+
+            if(flag){
+		        answer = ret[0];
+		        webpage = ret[1];
+                console.log(key + " : " + answer);
+            }
+        });
+
+        if(typeof answer == 'undefined'){
 	        answer = "ごめんなさい。わかりません。";
-    	}else{
-            answer = ret[0];
-            webpage = ret[1];
-        }
+    	}
 
         output += transcript + ' => ' + answer + '<br>';
 
